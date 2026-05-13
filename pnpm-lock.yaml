@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      '@types/debug':
+        specifier: ^4.1.12
+        version: 4.1.13
     devDependencies:
       '@types/node':
         specifier: ^22.15.29

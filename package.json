@@ -9,7 +9,8 @@
 		"esm",
 		"cjs",
 		"commonjs",
-		"loader"
+		"loader",
+		"bun"
 	],
 	"license": "MIT",
 	"repository": "leonsilicon/im.debug",
@@ -18,16 +19,34 @@
 		"email": "leon@leonsilicon.com"
 	},
 	"files": [
-		"dist"
+		"dist",
+		"src/types"
 	],
 	"type": "module",
 	"exports": {
 		"./package.json": "./package.json",
-		"./cjs": "./dist/cjs/index.cjs",
-		"./esm": "./dist/esm/index.mjs",
+		"./cjs": {
+			"types": "./dist/cjs/index.d.cts",
+			"default": "./dist/cjs/index.cjs"
+		},
+		"./node": {
+			"types": "./dist/node/index.d.mts",
+			"default": "./dist/node/index.mjs"
+		},
+		"./bun": {
+			"types": "./dist/bun/index.d.mts",
+			"default": "./dist/bun/index.mjs"
+		},
+		"./types": "./src/types/index.d.ts",
 		"./runtime": {
-			"import": "./dist/runtime/index.mjs",
-			"require": "./dist/runtime/index.cjs"
+			"import": {
+				"types": "./dist/runtime/index.d.mts",
+				"default": "./dist/runtime/index.mjs"
+			},
+			"require": {
+				"types": "./dist/runtime/index.d.cts",
+				"default": "./dist/runtime/index.cjs"
+			}
 		}
 	},
 	"packageManager": "pnpm@10.9.0",
@@ -39,6 +58,9 @@
 	},
 	"engines": {
 		"node": ">=18.19.0"
+	},
+	"dependencies": {
+		"@types/debug": "^4.1.12"
 	},
 	"devDependencies": {
 		"@types/node": "^22.15.29",

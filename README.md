@@ -22,25 +22,31 @@ npm install im.debug
 
 ## Usage
 
-Enable the hooks before any of your application code runs:
+Enable the hooks before any of your application code runs.
 
-ESM (preferred — `import.meta.debug` is ESM-only syntax):
+Node.js (ESM — preferred, `import.meta.debug` is ESM-only syntax):
 
 ```sh
-node --import im.debug/esm ./app.mjs
+node --import im.debug/node ./app.mjs
 ```
 
 or from inside an entry file:
 
 ```js
-import 'im.debug/esm';
+import 'im.debug/node';
 import './app.mjs';
 ```
 
-CommonJS / mixed-mode:
+Node.js (CommonJS / mixed-mode):
 
 ```sh
 node --require im.debug/cjs ./app.js
+```
+
+Bun:
+
+```sh
+bun --preload im.debug/bun ./app.ts
 ```
 
 Then sprinkle `import.meta.debug?.(...)` anywhere in your ESM source:
@@ -56,11 +62,23 @@ export function authenticate(user) {
 Run with the standard `debug` env-var conventions:
 
 ```sh
-DEBUG='*' node --import im.debug/esm ./app.mjs
+DEBUG='*' node --import im.debug/node ./app.mjs
 # 2026-01-01T00:00:00.000Z src/auth.mjs [src/auth.mjs:3:2] authenticating { id: 1 }
 
-DEBUG='src/auth*' node --import im.debug/esm ./app.mjs
+DEBUG='src/auth*' node --import im.debug/node ./app.mjs
 ```
+
+## TypeScript
+
+`im.debug` ships ambient typings that augment `ImportMeta` with an optional
+`debug` callable. Reference it once anywhere in your project (e.g. in a
+`globals.d.ts` or your entry file):
+
+```ts
+/// <reference types="im.debug/types" />
+```
+
+Now `import.meta.debug?.('hello', { user })` is type-checked everywhere.
 
 ## How it works
 
