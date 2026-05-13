@@ -1,6 +1,6 @@
 {
 	"name": "imdebug",
-	"version": "0.0.0-semantic-release",
+	"version": "0.0.0",
 	"description": "import.meta.debug — zero-config debug() calls with file, line, and column auto-baked in",
 	"keywords": [
 		"debug",
