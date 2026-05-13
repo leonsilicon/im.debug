@@ -43,7 +43,7 @@ const getInstance = (url: string): DebugInstance => {
  * site. The first message argument is prefixed with `[file:line:col]` so the
  * location is visible even when the consumer passes a non-string value.
  */
-export const __imdebug = (
+export const __imDotDebug = (
 	url: string,
 	line: number,
 	column: number,

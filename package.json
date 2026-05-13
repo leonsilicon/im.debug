@@ -1,5 +1,5 @@
 {
-	"name": "imdebug",
+	"name": "im.debug",
 	"version": "0.0.0",
 	"description": "import.meta.debug — zero-config debug() calls with file, line, and column auto-baked in",
 	"keywords": [
@@ -12,7 +12,7 @@
 		"loader"
 	],
 	"license": "MIT",
-	"repository": "leonsilicon/imdebug",
+	"repository": "leonsilicon/im.debug",
 	"author": {
 		"name": "Leon Si",
 		"email": "leon@leonsilicon.com"

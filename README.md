@@ -1,8 +1,10 @@
-# imdebug
+<!-- Published as im.debug — npm rejected the name imdebug as too similar to debug. -->
+
+# im.debug
 
 `import.meta.debug?.(...)` — zero-config debug logging with the file path, line, and column of the call site baked in.
 
-`imdebug` registers a Node.js module loader hook that rewrites every
+`im.debug` registers a Node.js module loader hook that rewrites every
 
 ```js
 import.meta.debug?.('user resolved', user);
@@ -13,10 +15,10 @@ into a call to a vendored copy of [`debug`](https://github.com/debug-js/debug), 
 ## Install
 
 ```sh
-npm install imdebug
+npm install im.debug
 ```
 
-`imdebug` ships with its own copy of `debug` — you do **not** need to install `debug` separately.
+`im.debug` ships with its own copy of `debug` — you do **not** need to install `debug` separately.
 
 ## Usage
 
@@ -25,20 +27,20 @@ Enable the hooks before any of your application code runs:
 ESM (preferred — `import.meta.debug` is ESM-only syntax):
 
 ```sh
-node --import imdebug/esm ./app.mjs
+node --import im.debug/esm ./app.mjs
 ```
 
 or from inside an entry file:
 
 ```js
-import 'imdebug/esm';
+import 'im.debug/esm';
 import './app.mjs';
 ```
 
 CommonJS / mixed-mode:
 
 ```sh
-node --require imdebug/cjs ./app.js
+node --require im.debug/cjs ./app.js
 ```
 
 Then sprinkle `import.meta.debug?.(...)` anywhere in your ESM source:
@@ -54,23 +56,23 @@ export function authenticate(user) {
 Run with the standard `debug` env-var conventions:
 
 ```sh
-DEBUG='*' node --import imdebug/esm ./app.mjs
+DEBUG='*' node --import im.debug/esm ./app.mjs
 # 2026-01-01T00:00:00.000Z src/auth.mjs [src/auth.mjs:3:2] authenticating { id: 1 }
 
-DEBUG='src/auth*' node --import imdebug/esm ./app.mjs
+DEBUG='src/auth*' node --import im.debug/esm ./app.mjs
 ```
 
 ## How it works
 
-When a JavaScript module is loaded, `imdebug`'s loader hook scans the source for `import.meta.debug?.(...)` and rewrites each call to:
+When a JavaScript module is loaded, `im.debug`'s loader hook scans the source for `import.meta.debug?.(...)` and rewrites each call to:
 
 ```js
-__imdebugRuntime.__imdebug(<url>, <line>, <col>, ...originalArgs);
+__imDotDebugRuntime.__imDotDebug(<url>, <line>, <col>, ...originalArgs);
 ```
 
 A single import of the runtime is prepended to the file so the rewrite is self-contained. The runtime lazily creates one `debug` instance per source URL (namespace = path relative to `cwd`, or the absolute path if outside `cwd`).
 
-Because the optional-chain (`?.`) is preserved in the original syntax, files that load without `imdebug` registered keep working — every `import.meta.debug?.(...)` is simply `undefined?.()`, which evaluates to `undefined` and is a no-op.
+Because the optional-chain (`?.`) is preserved in the original syntax, files that load without `im.debug` registered keep working — every `import.meta.debug?.(...)` is simply `undefined?.()`, which evaluates to `undefined` and is a no-op.
 
 ## Why a build-time transform?
 

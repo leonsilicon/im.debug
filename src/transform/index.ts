@@ -1,5 +1,5 @@
 /**
- * Rewrites `import.meta.debug?.(...)` calls into `__imdebug(url, line, col, ...args)`
+ * Rewrites `import.meta.debug?.(...)` calls into `__imDotDebug(url, line, col, ...args)`
  * and prepends an import/require for the runtime when at least one call is found.
  *
  * The scanner walks the source character by character so it can skip over
@@ -12,8 +12,8 @@ export type TransformOptions = {
 	runtimeSpecifier?: string;
 };
 
-const RUNTIME_LOCAL = '__imdebugRuntime';
-const CALL_LOCAL = `${RUNTIME_LOCAL}.__imdebug`;
+const RUNTIME_LOCAL = '__imDotDebugRuntime';
+const CALL_LOCAL = `${RUNTIME_LOCAL}.__imDotDebug`;
 const NEEDLE = 'import.meta.debug';
 
 const computeLineCol = (
@@ -138,7 +138,7 @@ export const transform = (
 	{
 		url,
 		moduleType,
-		runtimeSpecifier = 'imdebug/runtime',
+		runtimeSpecifier = 'im.debug/runtime',
 	}: TransformOptions,
 ): string | undefined => {
 	if (!source.includes(NEEDLE)) {
