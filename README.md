@@ -67,7 +67,7 @@ DEBUG='src/auth*' node --import im.debug/esm ./app.mjs
 When a JavaScript module is loaded, `im.debug`'s loader hook scans the source for `import.meta.debug?.(...)` and rewrites each call to:
 
 ```js
-__imDotDebugRuntime.__imDotDebug(<url>, <line>, <col>, ...originalArgs);
+__imDotDebugRuntime.__imDotDebug(url, line, col, ...originalArgs);
 ```
 
 A single import of the runtime is prepended to the file so the rewrite is self-contained. The runtime lazily creates one `debug` instance per source URL (namespace = path relative to `cwd`, or the absolute path if outside `cwd`).
