@@ -1,6 +1,6 @@
 {
 	"name": "im.debug",
-	"version": "0.0.0",
+	"version": "0.0.1",
 	"description": "import.meta.debug — zero-config debug() calls with file, line, and column auto-baked in",
 	"keywords": [
 		"debug",
