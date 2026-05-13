@@ -1,0 +1,50 @@
+{
+	"name": "imdebug",
+	"version": "0.0.0-semantic-release",
+	"description": "import.meta.debug — zero-config debug() calls with file, line, and column auto-baked in",
+	"keywords": [
+		"debug",
+		"import.meta",
+		"logger",
+		"esm",
+		"cjs",
+		"commonjs",
+		"loader"
+	],
+	"license": "MIT",
+	"repository": "leonsilicon/imdebug",
+	"author": {
+		"name": "Leon Si",
+		"email": "leon@leonsilicon.com"
+	},
+	"files": [
+		"dist"
+	],
+	"type": "module",
+	"exports": {
+		"./package.json": "./package.json",
+		"./cjs": "./dist/cjs/index.cjs",
+		"./esm": "./dist/esm/index.mjs",
+		"./runtime": {
+			"import": "./dist/runtime/index.mjs",
+			"require": "./dist/runtime/index.cjs"
+		}
+	},
+	"packageManager": "pnpm@10.9.0",
+	"scripts": {
+		"build": "pkgroll --minify",
+		"lint": "lintroll --node --cache .",
+		"type-check": "tsc",
+		"prepack": "pnpm build && clean-pkg-json"
+	},
+	"engines": {
+		"node": ">=18.19.0"
+	},
+	"devDependencies": {
+		"@types/node": "^22.15.29",
+		"clean-pkg-json": "^1.2.0",
+		"lintroll": "^1.8.1",
+		"pkgroll": "^2.4.1",
+		"typescript": "^5.5.2"
+	}
+}
