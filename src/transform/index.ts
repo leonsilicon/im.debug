@@ -1,136 +1,131 @@
-/**
- * Rewrites `import.meta.debug?.(...)` calls into `__imDotDebug(url, line, col, ...args)`
- * and prepends an import/require for the runtime when at least one call is found.
- *
- * The scanner walks the source character by character so it can skip over
- * string literals, template literals, regex literals, and comments — those
- * never contain a real `import.meta.debug?.(...)` call.
- */
+import { parse, type ParserOptions, type ParserPlugin } from '@babel/parser';
+import type {
+	CallExpression,
+	Node,
+	OptionalCallExpression,
+} from '@babel/types';
+import MagicString from 'magic-string';
+
 export type TransformOptions = {
 	url: string;
 	moduleType: 'esm' | 'cjs';
 	runtimeSpecifier?: string;
+
+	/** Pass `'ts'` / `'tsx'` for TypeScript sources, `'jsx'` for plain JSX. */
+	syntax?: 'js' | 'jsx' | 'ts' | 'tsx';
 };
 
 const RUNTIME_LOCAL = '__imDotDebugRuntime';
 const CALL_LOCAL = `${RUNTIME_LOCAL}.__imDotDebug`;
 const NEEDLE = 'import.meta.debug';
 
-const computeLineCol = (
-	source: string,
-	index: number,
-) => {
-	let line = 1;
-	let col = 1;
-	for (let i = 0; i < index; i += 1) {
-		if (source.charCodeAt(i) === 10) {
-			line += 1;
-			col = 1;
-		} else {
-			col += 1;
+const pluginsFor = (syntax: TransformOptions['syntax']): ParserPlugin[] => {
+	switch (syntax) {
+		case 'ts': {
+			return ['typescript'];
+		}
+		case 'tsx': {
+			return ['typescript', 'jsx'];
+		}
+		case 'jsx': {
+			return ['jsx'];
+		}
+		default: {
+			return [];
 		}
 	}
-	return { line, column: col };
 };
 
-const skipString = (
-	source: string,
-	start: number,
-	quote: string,
-) => {
-	let i = start + 1;
-	while (i < source.length) {
-		const ch = source[i];
-		if (ch === '\\') {
-			i += 2;
-			continue;
-		}
-		if (ch === quote) {
-			return i + 1;
-		}
-		i += 1;
-	}
-	return i;
-};
-
-const skipTemplate = (
-	source: string,
-	start: number,
-) => {
-	let i = start + 1;
-	while (i < source.length) {
-		const ch = source[i];
-		if (ch === '\\') {
-			i += 2;
-			continue;
-		}
-		if (ch === '`') {
-			return i + 1;
-		}
-		if (ch === '$' && source[i + 1] === '{') {
-			i = skipBalanced(source, i + 1, '{', '}');
-			continue;
-		}
-		i += 1;
-	}
-	return i;
-};
-
-const skipBalanced = (
-	source: string,
-	start: number,
-	open: string,
-	close: string,
-) => {
-	let depth = 0;
-	let i = start;
-	while (i < source.length) {
-		const ch = source[i];
-		if (ch === '/' && source[i + 1] === '/') {
-			i = source.indexOf('\n', i);
-			if (i === -1) {
-				return source.length;
-			}
-			continue;
-		}
-		if (ch === '/' && source[i + 1] === '*') {
-			const end = source.indexOf('*/', i + 2);
-			i = end === -1 ? source.length : end + 2;
-			continue;
-		}
-		if (ch === '"' || ch === '\'') {
-			i = skipString(source, i, ch);
-			continue;
-		}
-		if (ch === '`') {
-			i = skipTemplate(source, i);
-			continue;
-		}
-		if (ch === open) {
-			depth += 1;
-		} else if (ch === close) {
-			depth -= 1;
-			if (depth === 0) {
-				return i + 1;
-			}
-		}
-		i += 1;
-	}
-	return i;
-};
-
-const isIdentifierChar = (code: number) => (
-	(code >= 48 && code <= 57) // 0-9
-	|| (code >= 65 && code <= 90) // A-Z
-	|| (code >= 97 && code <= 122) // a-z
-	|| code === 95 // _
-	|| code === 36 // $
+const isImportMetaDebug = (node: Node): boolean => (
+	node.type === 'MemberExpression'
+	&& !node.computed
+	&& node.property.type === 'Identifier'
+	&& node.property.name === 'debug'
+	&& node.object.type === 'MetaProperty'
+	&& node.object.meta.name === 'import'
+	&& node.object.property.name === 'meta'
 );
 
-type Replacement = {
-	start: number;
-	end: number;
-	text: string;
+type Match = {
+	node: CallExpression | OptionalCallExpression;
+	line: number;
+	column: number;
+};
+
+const SKIP_KEYS = new Set(['loc', 'range', 'leadingComments', 'trailingComments']);
+
+const isAstNode = (value: unknown): value is Node => (
+	value !== null
+	&& typeof value === 'object'
+	&& 'type' in (value as Record<string, unknown>)
+);
+
+const visitChildren = (node: Node, visit: (child: Node) => void): void => {
+	for (const key of Object.keys(node)) {
+		if (SKIP_KEYS.has(key)) {
+			continue;
+		}
+		const value = (node as unknown as Record<string, unknown>)[key];
+		if (Array.isArray(value)) {
+			for (const child of value) {
+				if (isAstNode(child)) {
+					visit(child);
+				}
+			}
+		} else if (isAstNode(value)) {
+			visit(value);
+		}
+	}
+};
+
+const matchAt = (node: Node): Match | undefined => {
+	if (node.type !== 'OptionalCallExpression' && node.type !== 'CallExpression') {
+		return;
+	}
+	if (!isImportMetaDebug(node.callee) || !node.loc) {
+		return;
+	}
+	return {
+		node,
+		line: node.loc.start.line,
+		column: node.loc.start.column + 1,
+	};
+};
+
+const collectMatches = (ast: Node): Match[] => {
+	const matches: Match[] = [];
+	const visit = (node: Node): void => {
+		const match = matchAt(node);
+		if (match) {
+			matches.push(match);
+		}
+		visitChildren(node, visit);
+	};
+	visit(ast);
+	return matches;
+};
+
+type WithRange = { start: number;
+	end: number; };
+
+const rewriteMatch = (
+	out: MagicString,
+	source: string,
+	match: Match,
+	urlLiteral: string,
+): void => {
+	const { node, line, column } = match;
+	const { start, end } = node as unknown as WithRange;
+	const args = node.arguments;
+	const prefix = `${CALL_LOCAL}(${urlLiteral}, ${line}, ${column}`;
+	if (args.length === 0) {
+		out.overwrite(start, end, `${prefix})`);
+		return;
+	}
+	const firstStart = (args[0] as unknown as WithRange).start;
+	const lastEnd = (args.at(-1) as unknown as WithRange).end;
+	const argsSource = source.slice(firstStart, lastEnd);
+	out.overwrite(start, end, `${prefix}, ${argsSource})`);
 };
 
 export const transform = (
@@ -139,103 +134,41 @@ export const transform = (
 		url,
 		moduleType,
 		runtimeSpecifier = 'im.debug/runtime',
+		syntax = 'js',
 	}: TransformOptions,
 ): string | undefined => {
 	if (!source.includes(NEEDLE)) {
 		return;
 	}
 
-	const replacements: Replacement[] = [];
-	let i = 0;
+	const parserOptions: ParserOptions = {
+		sourceType: moduleType === 'cjs' ? 'unambiguous' : 'module',
+		allowReturnOutsideFunction: true,
+		allowAwaitOutsideFunction: true,
+		allowImportExportEverywhere: true,
+		allowSuperOutsideMethod: true,
+		errorRecovery: true,
+		plugins: pluginsFor(syntax),
+	};
 
-	while (i < source.length) {
-		const ch = source[i];
-
-		if (ch === '/' && source[i + 1] === '/') {
-			const newline = source.indexOf('\n', i);
-			i = newline === -1 ? source.length : newline;
-			continue;
-		}
-
-		if (ch === '/' && source[i + 1] === '*') {
-			const end = source.indexOf('*/', i + 2);
-			i = end === -1 ? source.length : end + 2;
-			continue;
-		}
-
-		if (ch === '"' || ch === '\'') {
-			i = skipString(source, i, ch);
-			continue;
-		}
-
-		if (ch === '`') {
-			i = skipTemplate(source, i);
-			continue;
-		}
-
-		// Look for "import.meta.debug" at this position, but only as a fresh identifier
-		if (ch === 'i' && source.startsWith(NEEDLE, i)) {
-			const before = i === 0 ? '' : source[i - 1];
-			const beforeCode = before ? before.charCodeAt(0) : 0;
-			if (before && (isIdentifierChar(beforeCode) || before === '.')) {
-				i += 1;
-				continue;
-			}
-
-			let cursor = i + NEEDLE.length;
-			// Allow whitespace before "?."
-			while (cursor < source.length && /\s/.test(source[cursor]!)) {
-				cursor += 1;
-			}
-			if (source[cursor] !== '?' || source[cursor + 1] !== '.') {
-				i += 1;
-				continue;
-			}
-			cursor += 2;
-			while (cursor < source.length && /\s/.test(source[cursor]!)) {
-				cursor += 1;
-			}
-			if (source[cursor] !== '(') {
-				i += 1;
-				continue;
-			}
-
-			const callOpen = cursor;
-			const callClose = skipBalanced(source, callOpen, '(', ')');
-			const argsSource = source.slice(callOpen + 1, callClose - 1);
-
-			const { line, column } = computeLineCol(source, i);
-			const prefix = `${CALL_LOCAL}(${JSON.stringify(url)}, ${line}, ${column}`;
-			const replacement = (
-				argsSource.trim().length === 0
-					? `${prefix})`
-					: `${prefix}, ${argsSource})`
-			);
-
-			replacements.push({
-				start: i,
-				end: callClose,
-				text: replacement,
-			});
-
-			i = callClose;
-			continue;
-		}
-
-		i += 1;
-	}
-
-	if (replacements.length === 0) {
+	let ast: Node;
+	try {
+		ast = parse(source, parserOptions);
+	} catch {
 		return;
 	}
 
-	let output = '';
-	let cursor = 0;
-	for (const { start, end, text } of replacements) {
-		output += source.slice(cursor, start) + text;
-		cursor = end;
+	const matches = collectMatches(ast);
+	if (matches.length === 0) {
+		return;
 	}
-	output += source.slice(cursor);
+
+	const out = new MagicString(source);
+	const urlLiteral = JSON.stringify(url);
+
+	for (const match of matches) {
+		rewriteMatch(out, source, match, urlLiteral);
+	}
 
 	const banner = (
 		moduleType === 'esm'
@@ -243,11 +176,12 @@ export const transform = (
 			: `var ${RUNTIME_LOCAL}=require(${JSON.stringify(runtimeSpecifier)});`
 	);
 
-	// Preserve leading shebang and "use strict" so the banner stays valid
-	const shebangMatch = output.match(/^#![^\n]*\n/);
+	const shebangMatch = source.match(/^#![^\n]*\n/);
 	if (shebangMatch) {
-		const offset = shebangMatch[0].length;
-		return output.slice(0, offset) + banner + '\n' + output.slice(offset);
+		out.appendRight(shebangMatch[0].length, `${banner}\n`);
+	} else {
+		out.prepend(`${banner}\n`);
 	}
-	return banner + '\n' + output;
+
+	return out.toString();
 };

@@ -7,7 +7,7 @@
 `im.debug` registers a Node.js module loader hook that rewrites every
 
 ```js
-import.meta.debug?.('user resolved', user);
+import.meta.debug?.('user resolved', user)
 ```
 
 into a call to a vendored copy of [`debug`](https://github.com/debug-js/debug), with the namespace derived from the source file's URL. The location is added to the log line so a single `DEBUG=*` shows exactly which file, line, and column emitted each message.
@@ -33,8 +33,8 @@ node --import im.debug/node ./app.mjs
 or from inside an entry file:
 
 ```js
-import 'im.debug/node';
-import './app.mjs';
+import 'im.debug/node'
+import './app.mjs'
 ```
 
 Node.js (CommonJS / mixed-mode):
@@ -53,9 +53,9 @@ Then sprinkle `import.meta.debug?.(...)` anywhere in your ESM source:
 
 ```js
 // src/auth.mjs
-export function authenticate(user) {
-	import.meta.debug?.('authenticating %o', user);
-	// ...
+export const authenticate = (user) => {
+    import.meta.debug?.('authenticating %o', user)
+    // ...
 }
 ```
 
@@ -85,7 +85,7 @@ Now `import.meta.debug?.('hello', { user })` is type-checked everywhere.
 When a JavaScript module is loaded, `im.debug`'s loader hook scans the source for `import.meta.debug?.(...)` and rewrites each call to:
 
 ```js
-__imDotDebugRuntime.__imDotDebug(url, line, col, ...originalArgs);
+__imDotDebugRuntime.__imDotDebug(url, line, col, ...originalArgs)
 ```
 
 A single import of the runtime is prepended to the file so the rewrite is self-contained. The runtime lazily creates one `debug` instance per source URL (namespace = path relative to `cwd`, or the absolute path if outside `cwd`).

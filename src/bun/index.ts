@@ -47,6 +47,19 @@ const loaderFor = (filePath: string): BunLoader => {
 	return 'js';
 };
 
+const syntaxFor = (filePath: string): 'js' | 'jsx' | 'ts' | 'tsx' => {
+	if (filePath.endsWith('.tsx')) {
+		return 'tsx';
+	}
+	if (filePath.endsWith('.jsx')) {
+		return 'jsx';
+	}
+	if (/\.[mc]?ts$/.test(filePath)) {
+		return 'ts';
+	}
+	return 'js';
+};
+
 export const imDotDebugBunPlugin: BunPlugin = {
 	name: 'im.debug',
 	setup(build) {
@@ -64,6 +77,7 @@ export const imDotDebugBunPlugin: BunPlugin = {
 			const transformed = transform(source, {
 				url: pathToFileURL(path).href,
 				moduleType: path.endsWith('.cjs') || path.endsWith('.cts') ? 'cjs' : 'esm',
+				syntax: syntaxFor(path),
 			});
 
 			return {

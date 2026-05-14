@@ -1,58 +1,92 @@
 {
-  "name": "im.debug",
-  "version": "0.0.1",
-  "description": "import.meta.debug — zero-config debug() calls with file, line, and column auto-baked in",
-  "keywords": [
-    "debug",
-    "import.meta",
-    "logger",
-    "esm",
-    "cjs",
-    "commonjs",
-    "loader",
-    "bun"
-  ],
-  "license": "MIT",
-  "repository": "leonsilicon/im.debug",
-  "author": {
-    "name": "Leon Si",
-    "email": "leon@leonsilicon.com"
-  },
-  "files": [
-    "dist",
-    "src/types"
-  ],
-  "type": "module",
-  "exports": {
-    "./package.json": "./package.json",
-    "./cjs": {
-      "types": "./dist/cjs/index.d.cts",
-      "default": "./dist/cjs/index.cjs"
-    },
-    "./node": {
-      "types": "./dist/node/index.d.mts",
-      "default": "./dist/node/index.mjs"
-    },
-    "./bun": {
-      "types": "./dist/bun/index.d.mts",
-      "default": "./dist/bun/index.mjs"
-    },
-    "./types": "./src/types/index.d.ts",
-    "./runtime": {
-      "import": {
-        "types": "./dist/runtime/index.d.mts",
-        "default": "./dist/runtime/index.mjs"
-      },
-      "require": {
-        "types": "./dist/runtime/index.d.cts",
-        "default": "./dist/runtime/index.cjs"
-      }
-    }
-  },
-  "engines": {
-    "node": ">=18.19.0"
-  },
-  "dependencies": {
-    "@types/debug": "^4.1.12"
-  }
+	"name": "im.debug",
+	"version": "0.0.1",
+	"description": "import.meta.debug — zero-config debug() calls with file, line, and column auto-baked in",
+	"keywords": [
+		"debug",
+		"import.meta",
+		"logger",
+		"esm",
+		"cjs",
+		"commonjs",
+		"loader",
+		"bun"
+	],
+	"license": "MIT",
+	"repository": "leonsilicon/im.debug",
+	"author": {
+		"name": "Leon Si",
+		"email": "leon@leonsilicon.com"
+	},
+	"files": [
+		"dist",
+		"src/types"
+	],
+	"type": "module",
+	"exports": {
+		"./package.json": "./package.json",
+		"./cjs": {
+			"types": "./dist/cjs/index.d.cts",
+			"default": "./dist/cjs/index.cjs"
+		},
+		"./node": {
+			"types": "./dist/node/index.d.mts",
+			"default": "./dist/node/index.mjs"
+		},
+		"./bun": {
+			"types": "./dist/bun/index.d.mts",
+			"default": "./dist/bun/index.mjs"
+		},
+		"./types": "./src/types/index.d.ts",
+		"./plugin": {
+			"import": {
+				"types": "./dist/plugin/index.d.mts",
+				"default": "./dist/plugin/index.mjs"
+			},
+			"require": {
+				"types": "./dist/plugin/index.d.cts",
+				"default": "./dist/plugin/index.cjs"
+			}
+		},
+		"./runtime": {
+			"import": {
+				"types": "./dist/runtime/index.d.mts",
+				"default": "./dist/runtime/index.mjs"
+			},
+			"require": {
+				"types": "./dist/runtime/index.d.cts",
+				"default": "./dist/runtime/index.cjs"
+			}
+		}
+	},
+	"engines": {
+		"node": ">=18.19.0"
+	},
+	"dependencies": {
+		"@babel/parser": "^7.29.3",
+		"@babel/types": "^7.29.0",
+		"@types/debug": "^4.1.12",
+		"magic-string": "^0.30.21"
+	},
+	"peerDependencies": {
+		"@babel/core": "^7.10.0",
+		"@types/babel__core": "^7.20.5"
+	},
+	"peerDependenciesMeta": {
+		"@babel/core": {
+			"optional": true
+		},
+		"@types/babel__core": {
+			"optional": true
+		}
+	},
+	"devDependencies": {
+		"@babel/core": "^7.29.0",
+		"@types/babel__core": "^7.20.5",
+		"@types/node": "^22.15.29",
+		"clean-pkg-json": "^1.2.0",
+		"lintroll": "^1.8.1",
+		"pkgroll": "^2.4.1",
+		"typescript": "^5.5.2"
+	}
 }

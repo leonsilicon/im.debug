@@ -15,10 +15,10 @@ export const register = (): Unregister => {
 	const extensions = (Module as unknown as { _extensions: ExtensionsRecord })._extensions;
 	const previous: Partial<Record<string, Loader>> = {};
 
-	const make = (defaultLoader: Loader): Loader => function transformer(
+	const make = (defaultLoader: Loader): Loader => (
 		module,
 		filename,
-	) {
+	) => {
 		let source: string;
 		try {
 			source = fs.readFileSync(filename, 'utf8');
