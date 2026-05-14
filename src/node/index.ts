@@ -3,7 +3,7 @@ import { isMainThread } from 'node:worker_threads';
 
 export { load } from './hook.js';
 
-// Loaded via `--import im.debug/esm` or `import 'im.debug/esm'`.
+// Loaded via `--import im.debug/node` or `import 'im.debug/node'`.
 // Re-register this module with the loader hooks API so its exported `load`
 // hook is wired in. The query string forces a fresh load if registered twice.
 if (typeof module.register === 'function' && isMainThread) {
