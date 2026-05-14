@@ -14,9 +14,6 @@ importers:
       '@babel/types':
         specifier: ^7.29.0
         version: 7.29.0
-      '@types/debug':
-        specifier: ^4.1.12
-        version: 4.1.13
       magic-string:
         specifier: ^0.30.21
         version: 0.30.21
@@ -30,12 +27,18 @@ importers:
       '@types/babel__core':
         specifier: ^7.20.5
         version: 7.20.5
+      '@types/debug':
+        specifier: ^4.1.12
+        version: 4.1.13
       '@types/node':
         specifier: ^22.15.29
         version: 22.19.19
       clean-pkg-json:
         specifier: ^1.2.0
         version: 1.4.2
+      debug:
+        specifier: ^4.4.0
+        version: 4.4.3
       lintroll:
         specifier: ^1.8.1
         version: 1.30.2(@types/estree@1.0.9)(@typescript-eslint/utils@8.59.3(eslint@9.39.4)(typescript@5.9.3))(jsonc-eslint-parser@2.4.2)(typescript@5.9.3)

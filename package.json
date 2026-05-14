@@ -72,13 +72,14 @@
 	"dependencies": {
 		"@babel/parser": "^7.29.3",
 		"@babel/types": "^7.29.0",
-		"@types/debug": "^4.1.12",
 		"magic-string": "^0.30.21",
 		"pathe": "^2.0.3"
 	},
 	"peerDependencies": {
 		"@babel/core": "^7.10.0",
-		"@types/babel__core": "^7.20.5"
+		"@types/babel__core": "^7.20.5",
+		"@types/debug": "^4.1.12",
+		"debug": "^4.0.0"
 	},
 	"peerDependenciesMeta": {
 		"@babel/core": {
@@ -86,13 +87,18 @@
 		},
 		"@types/babel__core": {
 			"optional": true
+		},
+		"@types/debug": {
+			"optional": true
 		}
 	},
 	"devDependencies": {
 		"@babel/core": "^7.29.0",
 		"@types/babel__core": "^7.20.5",
+		"@types/debug": "^4.1.12",
 		"@types/node": "^22.15.29",
 		"clean-pkg-json": "^1.2.0",
+		"debug": "^4.4.0",
 		"lintroll": "^1.8.1",
 		"tsdown": "^0.22.0",
 		"typescript": "^5.5.2"

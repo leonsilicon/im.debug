@@ -1,5 +1,5 @@
+import createDebug from 'debug';
 import { basename } from 'pathe';
-import createDebug from '../vendor/debug/index.cjs';
 
 type DebugInstance = ((...args: unknown[]) => void) & { enabled: boolean };
 

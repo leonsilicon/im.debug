@@ -10,15 +10,15 @@
 import.meta.debug?.('user resolved', user)
 ```
 
-into a call to a vendored copy of [`debug`](https://github.com/debug-js/debug), with the namespace derived from the source file's URL. The location is added to the log line so a single `DEBUG=*` shows exactly which file, line, and column emitted each message.
+into a call to [`debug`](https://github.com/debug-js/debug), with the namespace derived from the source file's URL. The location is added to the log line so a single `DEBUG=*` shows exactly which file, line, and column emitted each message.
 
 ## Install
 
 ```sh
-npm install im.debug
+npm install im.debug debug
 ```
 
-`im.debug` ships with its own copy of `debug` — you do **not** need to install `debug` separately.
+`debug` is a peer dependency, so install it alongside `im.debug`.
 
 ## Usage
 
@@ -98,4 +98,4 @@ Reading the call-site line/column at runtime requires throwing an `Error` and pa
 
 ## License
 
-MIT. The bundled `debug` source is also MIT-licensed; see `src/vendor/debug/LICENSE`.
+MIT.
