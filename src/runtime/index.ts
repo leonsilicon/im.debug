@@ -1,5 +1,4 @@
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { basename } from 'pathe';
 import createDebug from '../vendor/debug/index.cjs';
 
 type DebugInstance = ((...args: unknown[]) => void) & { enabled: boolean };
@@ -10,21 +9,20 @@ const factory = createDebug as unknown as DebugFactory;
 
 const instanceCache = new Map<string, DebugInstance>();
 
-const urlToNamespace = (url: string): string => {
-	if (url.startsWith('file://')) {
-		try {
-			const filePath = fileURLToPath(url);
-			const cwd = process.cwd();
-			const relative = path.relative(cwd, filePath);
-			if (relative && !relative.startsWith('..') && !path.isAbsolute(relative)) {
-				return relative;
-			}
-			return filePath;
-		} catch {
-			return url;
-		}
+const fileUrlToPath = (url: string): string => {
+	let pathname = url.slice('file://'.length);
+	const slash = pathname.indexOf('/');
+	if (slash > 0) {
+		pathname = pathname.slice(slash);
 	}
-	return url;
+	return pathname.replace(/%([\da-f]{2})/gi, (_, hex: string) => (
+		String.fromCharCode(Number.parseInt(hex, 16))
+	));
+};
+
+const urlToNamespace = (url: string): string => {
+	const raw = url.startsWith('file://') ? fileUrlToPath(url) : url;
+	return basename(raw) || raw;
 };
 
 const getInstance = (url: string): DebugInstance => {

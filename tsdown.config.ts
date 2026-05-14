@@ -23,7 +23,7 @@ export default defineConfig([
 	{
 		entry: { 'runtime/index': 'src/runtime/index.ts' },
 		format: ['esm', 'cjs'],
-		platform: 'node',
+		platform: 'neutral',
 		dts: true,
 	},
 	{
